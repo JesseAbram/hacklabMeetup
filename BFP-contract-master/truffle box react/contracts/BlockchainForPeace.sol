@@ -9,11 +9,12 @@ contract BlockchainForPeace {
     
     //struct for the donation 
     struct Donation {
-        string message; 
+        string[] message; 
         uint value; 
     }
     //mapping an address to the donation struct 
     mapping (address => Donation) public donors;
+    event Donate(address indexed from, uint amount, string message);
     
     //constructor to initiate the address of the charity being donated to
     constructor (address _charity) public {
@@ -24,16 +25,16 @@ contract BlockchainForPeace {
     function fallback() payable public {
      donors[msg.sender].value = msg.value; 
      raised += msg.value;
+     charity.transfer(msg.value);
     }
     // optional message to be sent with donation, peace message.
     function messageForPeace(string _message) payable public {
+        donors[msg.sender].value += msg.value;
         require(donors[msg.sender].value != 0);
-        donors[msg.sender].message = _message;
+        donors[msg.sender].message.push(_message);
         charity.transfer(msg.value);
-        donors[msg.sender].value = msg.value; 
         raised += msg.value;
         emit Donate(msg.sender, msg.value, _message);
     }
     
-    event Donate(address indexed from, uint amount, string message);
 }
